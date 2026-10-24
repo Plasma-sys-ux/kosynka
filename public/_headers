@@ -1,0 +1,29 @@
+# Заголовки для Cloudflare (Workers static assets и Pages читают этот файл сами).
+# Строки с # — комментарии.
+
+# Безопасность — для всех страниц и файлов
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Cross-Origin-Opener-Policy: same-origin
+
+# Страница игры — браузер каждый раз спрашивает, нет ли новой версии
+/
+  Cache-Control: public, max-age=0, must-revalidate
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Стили и скрипты — короткий кеш (5 минут), чтобы обновления быстро доходили до игроков
+/*.css
+  Cache-Control: public, max-age=300, must-revalidate
+/*.js
+  Cache-Control: public, max-age=300, must-revalidate
+
+# Иконка и картинка для превью меняются редко — кеш на сутки
+/*.svg
+  Cache-Control: public, max-age=86400
+/*.png
+  Cache-Control: public, max-age=86400

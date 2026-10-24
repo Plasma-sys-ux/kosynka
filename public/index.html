@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Косынка — неоновый пасьянс</title>
+  <meta name="description" content="Классическая «Косынка» (Klondike) в неоновом стиле: три уровня сложности, отмена хода, подсказки и таблица рекордов. Работает в браузере, без регистрации.">
+  <meta name="theme-color" content="#07070c">
+  <meta name="color-scheme" content="dark">
+
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:title" content="Косынка — неоновый пасьянс">
+  <meta property="og:description" content="Классический пасьянс в неоновом стиле: три режима, подсказки и рекорды. Играйте прямо в браузере.">
+  <meta property="og:image" content="og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="cyber">
+  <!-- Масти карт и значки: рисуются один раз и переиспользуются -->
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="suit-H" viewBox="0 0 100 100">
+      <path d="M50 90C22 68 5 51 5 31 5 16 16 6 29 6c9 0 17 5 21 14C54 11 62 6 71 6c13 0 24 10 24 25 0 20-17 37-45 59Z"/>
+    </symbol>
+    <symbol id="suit-D" viewBox="0 0 100 100">
+      <path d="M50 4 86 50 50 96 14 50Z"/>
+    </symbol>
+    <symbol id="suit-S" viewBox="0 0 100 100">
+      <path d="M50 5C61 23 94 39 94 61c0 13-10 22-22 22-8 0-14-4-18-10 1 9 5 16 12 21H34c7-5 11-12 12-21-4 6-10 10-18 10-12 0-22-9-22-22C6 39 39 23 50 5Z"/>
+    </symbol>
+    <symbol id="suit-C" viewBox="0 0 100 100">
+      <circle cx="50" cy="28" r="20"/>
+      <circle cx="27" cy="60" r="20"/>
+      <circle cx="73" cy="60" r="20"/>
+      <path d="M40 44h20l-4 20H44Z"/>
+      <path d="M46 58h8c0 15 4 25 12 36H34c8-11 12-21 12-36Z"/>
+    </symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></symbol>
+    <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2Z"/></symbol>
+    <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.01"/></symbol>
+    <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.7-.8 1.7-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7h2A4.6 4.6 0 0 0 21 10.6C21 6.4 17 3 12 3Z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10.5" cy="7.5" r="1"/><circle cx="15" cy="7.5" r="1"/></symbol>
+    <symbol id="i-recycle" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v5h-5"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="m6.5 6.5 11 11"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  </svg>
+
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <svg class="brand-mark" aria-hidden="true"><use href="#suit-S"/></svg>
+        <span class="brand-name">Косынка</span>
+        <span class="mode-badge" id="modeBadge">Лёгкий</span>
+      </div>
+
+      <dl class="stats">
+        <div><dt>Очки</dt><dd id="score">0</dd></div>
+        <div><dt>Время</dt><dd id="time">0:00</dd></div>
+        <div><dt>Ходы</dt><dd id="moves">0</dd></div>
+        <div id="passBox" hidden><dt>Проход</dt><dd id="pass">1/3</dd></div>
+      </dl>
+
+      <nav class="actions" aria-label="Управление игрой">
+        <button class="btn btn-primary" id="btnNew" type="button"><svg aria-hidden="true"><use href="#i-plus"/></svg><span>Новая<span class="wide-only"> игра</span></span></button>
+        <button class="btn" id="btnUndo" type="button"><svg aria-hidden="true"><use href="#i-undo"/></svg><span>Отменить</span></button>
+        <button class="btn" id="btnHint" type="button"><svg aria-hidden="true"><use href="#i-bulb"/></svg><span>Подсказка</span></button>
+        <span class="actions-sep" aria-hidden="true"></span>
+        <button class="btn btn-icon" id="btnRecords" type="button" title="Рекорды"><svg aria-hidden="true"><use href="#i-trophy"/></svg><span>Рекорды</span></button>
+        <button class="btn btn-icon" id="btnRules" type="button" title="Правила"><svg aria-hidden="true"><use href="#i-help"/></svg><span>Правила</span></button>
+        <button class="btn btn-icon" id="btnTheme" type="button" title="Цветовая схема"><svg aria-hidden="true"><use href="#i-palette"/></svg><span>Тема</span></button>
+      </nav>
+    </header>
+
+    <main class="board" id="board" aria-label="Игровое поле">
+      <div class="row row-top">
+        <button class="slot slot-stock" id="stock" type="button" aria-label="Колода: открыть карты">
+          <svg class="slot-icon" id="stockIcon" aria-hidden="true"><use href="#i-recycle"/></svg>
+        </button>
+        <div class="slot slot-waste" id="waste" aria-hidden="true"></div>
+        <div class="slot-spacer" aria-hidden="true"></div>
+        <div class="slot slot-foundation" data-foundation="0" aria-hidden="true"><span class="slot-letter">A</span></div>
+        <div class="slot slot-foundation" data-foundation="1" aria-hidden="true"><span class="slot-letter">A</span></div>
+        <div class="slot slot-foundation" data-foundation="2" aria-hidden="true"><span class="slot-letter">A</span></div>
+        <div class="slot slot-foundation" data-foundation="3" aria-hidden="true"><span class="slot-letter">A</span></div>
+      </div>
+      <div class="row row-tableau">
+        <div class="slot slot-column" data-column="0" aria-hidden="true"><span class="slot-letter">K</span></div>
+        <div class="slot slot-column" data-column="1" aria-hidden="true"><span class="slot-letter">K</span></div>
+        <div class="slot slot-column" data-column="2" aria-hidden="true"><span class="slot-letter">K</span></div>
+        <div class="slot slot-column" data-column="3" aria-hidden="true"><span class="slot-letter">K</span></div>
+        <div class="slot slot-column" data-column="4" aria-hidden="true"><span class="slot-letter">K</span></div>
+        <div class="slot slot-column" data-column="5" aria-hidden="true"><span class="slot-letter">K</span></div>
+        <div class="slot slot-column" data-column="6" aria-hidden="true"><span class="slot-letter">K</span></div>
+      </div>
+      <div class="cards" id="cards"></div>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <!-- Новая игра -->
+  <dialog class="modal" id="dlgNew" aria-labelledby="dlgNewTitle">
+    <form method="dialog" class="modal-body" id="formNew">
+      <header class="modal-head">
+        <h2 id="dlgNewTitle">Новая игра</h2>
+        <button class="btn-close" value="cancel" type="submit" aria-label="Закрыть"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+      </header>
+      <p class="muted">Выберите сложность:</p>
+      <div class="mode-list" role="radiogroup" aria-label="Сложность">
+        <label class="mode-card">
+          <input type="radio" name="mode" value="easy">
+          <span class="mode-title">Лёгкий</span>
+          <span class="mode-desc">Открывается 1 карта · колоду можно листать сколько угодно · отмена хода бесплатно</span>
+        </label>
+        <label class="mode-card">
+          <input type="radio" name="mode" value="medium">
+          <span class="mode-title">Средний</span>
+          <span class="mode-desc">Открываются 3 карты · колоду можно листать сколько угодно · отмена хода −15 очков</span>
+        </label>
+        <label class="mode-card">
+          <input type="radio" name="mode" value="hard">
+          <span class="mode-title">Сложный</span>
+          <span class="mode-desc">Открываются 3 карты · не больше 3 проходов по колоде · без отмены хода</span>
+        </label>
+      </div>
+      <footer class="modal-foot">
+        <button class="btn" value="cancel" type="submit">Отмена</button>
+        <button class="btn btn-primary" value="start" type="submit">Раздать карты</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Правила -->
+  <dialog class="modal" id="dlgRules" aria-labelledby="dlgRulesTitle">
+    <form method="dialog" class="modal-body">
+      <header class="modal-head">
+        <h2 id="dlgRulesTitle">Правила</h2>
+        <button class="btn-close" type="submit" aria-label="Закрыть"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+      </header>
+      <div class="rules">
+        <h3>Цель</h3>
+        <p>Собрать все карты в четыре стопки справа вверху: каждая масть от туза (A) до короля (K).</p>
+        <h3>Как ходить</h3>
+        <ul>
+          <li>В колонках карты кладутся по убыванию с чередованием цвета: на чёрную восьмёрку — красная семёрка.</li>
+          <li>Можно переносить сразу цепочку открытых карт.</li>
+          <li>На пустое место в колонке можно положить только короля (вместе с цепочкой под ним).</li>
+          <li>Нажмите на колоду слева вверху, чтобы открыть карты. Когда колода закончится, нажмите ещё раз — она перевернётся заново.</li>
+          <li>Перетаскивайте карты мышью или пальцем. Двойной клик (или двойное касание) отправляет карту в стопку масти, если это возможно.</li>
+          <li>Когда все карты в колонках открыты, игра доберёт пасьянс сама.</li>
+        </ul>
+        <h3>Очки</h3>
+        <table class="score-table">
+          <tbody>
+            <tr><td>Карта в стопку масти</td><td>+10</td></tr>
+            <tr><td>Карта из открытой колоды в колонку</td><td>+5</td></tr>
+            <tr><td>Открыта закрытая карта в колонке</td><td>+5</td></tr>
+            <tr><td>Карта возвращена из стопки масти</td><td>−15</td></tr>
+            <tr><td>Новый проход по колоде</td><td>−20</td></tr>
+            <tr><td>Отмена хода (средний режим)</td><td>−15</td></tr>
+            <tr><td>Каждые 10 секунд игры</td><td>−2</td></tr>
+            <tr><td>Победа</td><td>+500</td></tr>
+          </tbody>
+        </table>
+        <p class="muted">Меньше нуля счёт не опускается. Таймер запускается с первого хода.</p>
+        <h3>Клавиши</h3>
+        <p class="muted"><kbd>Ctrl</kbd>+<kbd>Z</kbd> — отменить ход, <kbd>H</kbd> — подсказка, <kbd>Пробел</kbd> — открыть карты из колоды, <kbd>N</kbd> — новая игра.</p>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Рекорды -->
+  <dialog class="modal modal-wide" id="dlgRecords" aria-labelledby="dlgRecordsTitle">
+    <form method="dialog" class="modal-body">
+      <header class="modal-head">
+        <h2 id="dlgRecordsTitle">Лучшие результаты</h2>
+        <button class="btn-close" type="submit" aria-label="Закрыть"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+      </header>
+      <div class="tabs" role="tablist" id="recordTabs">
+        <button type="button" role="tab" class="tab" data-mode="easy">Лёгкий</button>
+        <button type="button" role="tab" class="tab" data-mode="medium">Средний</button>
+        <button type="button" role="tab" class="tab" data-mode="hard">Сложный</button>
+      </div>
+      <div class="records-wrap">
+        <table class="records">
+          <thead><tr><th>#</th><th>Имя</th><th>Очки</th><th>Время</th><th>Ходы</th><th>Дата</th></tr></thead>
+          <tbody id="recordsBody"></tbody>
+        </table>
+        <p class="records-empty muted" id="recordsEmpty" hidden>Пока пусто. Выиграйте партию, чтобы попасть в таблицу.</p>
+      </div>
+      <footer class="modal-foot">
+        <div class="confirm" id="resetConfirm" hidden>
+          <span>Удалить все результаты этого режима?</span>
+          <button class="btn btn-danger" type="button" id="btnResetYes">Да, удалить</button>
+          <button class="btn" type="button" id="btnResetNo">Нет</button>
+        </div>
+        <button class="btn" type="button" id="btnReset">Сбросить таблицу</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Цветовые схемы -->
+  <dialog class="modal" id="dlgTheme" aria-labelledby="dlgThemeTitle">
+    <form method="dialog" class="modal-body">
+      <header class="modal-head">
+        <h2 id="dlgThemeTitle">Цветовая схема</h2>
+        <button class="btn-close" type="submit" aria-label="Закрыть"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+      </header>
+      <div class="theme-list" id="themeList"></div>
+    </form>
+  </dialog>
+
+  <!-- Победа -->
+  <dialog class="modal" id="dlgWin" aria-labelledby="dlgWinTitle">
+    <form method="dialog" class="modal-body" id="formWin">
+      <header class="modal-head">
+        <h2 id="dlgWinTitle" class="win-title">Победа!</h2>
+      </header>
+      <dl class="win-stats">
+        <div><dt>Очки</dt><dd id="winScore">0</dd></div>
+        <div><dt>Время</dt><dd id="winTime">0:00</dd></div>
+        <div><dt>Ходы</dt><dd id="winMoves">0</dd></div>
+      </dl>
+      <div id="winRecord" hidden>
+        <p class="win-note" id="winPlace"></p>
+        <label class="field">
+          <span>Ваше имя</span>
+          <input type="text" id="winName" maxlength="20" autocomplete="nickname" placeholder="Игрок">
+        </label>
+      </div>
+      <p class="muted" id="winNoRecord" hidden>В топ-10 этого режима результат не попал. Попробуйте ещё раз!</p>
+      <footer class="modal-foot">
+        <button class="btn" type="submit" value="close" id="btnWinClose">Закрыть</button>
+        <button class="btn btn-primary" type="submit" value="save" id="btnWinSave">Сохранить</button>
+        <button class="btn btn-primary" type="submit" value="again" id="btnWinAgain">Ещё партию</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <script src="logic.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

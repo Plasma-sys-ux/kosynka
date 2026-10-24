@@ -1,0 +1,13 @@
+// Настройки для деплоя на Cloudflare командой `npx wrangler deploy`.
+// Сайт статический: Cloudflare просто раздаёт файлы из папки public/.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // Имя проекта. Адрес будет https://kosynka.<ваш-поддомен>.workers.dev
+  "name": "kosynka",
+  // Версия среды Cloudflare. Обычно ставят дату создания проекта.
+  "compatibility_date": "2026-10-24",
+  "assets": {
+    // Папка, которую Cloudflare выложит в интернет
+    "directory": "./public"
+  }
+}
